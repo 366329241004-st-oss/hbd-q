@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday!</title>
+    <!-- เรียกใช้ Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* แอนิเมชันของลอยฉากกลางคืน */
+        @keyframes floatItem {
+            0% { transform: translateY(0) scale(0.8) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-120vh) scale(1.2) rotate(20deg); opacity: 0; }
+        }
+        .floating {
+            position: absolute;
+            bottom: -50px;
+            animation: floatItem 6s linear infinite;
+            z-index: 0;
+        }
+        
+        /* แอนิเมชันเปิดซองจดหมาย */
+        .envelope-container {
+            perspective: 1000px;
+        }
+        .flap {
+            transform-origin: top;
+            transition: transform 0.6s ease-in-out;
+        }
+        .open-flap {
+            transform: rotateX(180deg);
+        }
+    </style>
+</head>
+<body class="m-0 p-0 overflow-hidden font-sans select-none text-gray-800">
+
+    <!-- ไฟล์เสียงเพลงพื้นหลัง -->
+    <audio id="bg-music" src="music.mp3" loop></audio>
+
+    <!-- ==========================================
+         หน้าปก (กดเพื่อทะลวงกฎบล็อกเสียงของเบราว์เซอร์)
+         ========================================== -->
+    <div id="step0" class="absolute inset-0 bg-pink-200 flex flex-col items-center justify-center transition-opacity duration-700 z-40 cursor-pointer" onclick="startExperience()">
+        <div class="animate-pulse flex flex-col items-center text-center px-4">
+            <span class="text-7xl mb-6">💌</span>
+            <h2 class="text-3xl font-extrabold text-rose-500 mb-3 drop-shadow-md">มีของขวัญส่งมาให้!</h2>
+            <p class="text-rose-400 text-lg font-medium">แตะหน้าจอเพื่อเปิดดูเลย 👆</p>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         หน้า 1: แมวถือเค้ก
+         ========================================== -->
+    <div id="step1" class="absolute inset-0 bg-pink-100 flex flex-col items-center justify-center z-30">
+        <!-- ไฟล์วิดีโอน้องแมวถือเค้ก -->
+        <video src="q1.mp4" autoplay loop muted playsinline class="w-64 h-auto rounded-xl shadow-lg mb-8"></video>
+        
+        <button onclick="showStep2()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105">
+            คลิก 🎁
+        </button>
+    </div>
+
+    <!-- ==========================================
+         หน้า 2: ซองจดหมาย
+         ========================================== -->
+    <div id="step2" class="absolute inset-0 bg-pink-100 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-700 z-20">
+        
+        <!-- ตัวซองจดหมาย -->
+        <div class="envelope-container relative w-72 h-48 bg-pink-300 rounded-b-md shadow-md mb-12 flex items-center justify-center mt-12">
+            <!-- ฝาซอง -->
+            <div id="flap" class="flap absolute top-0 left-0 w-0 h-0 border-l-[144px] border-r-[144px] border-t-[100px] border-transparent border-t-pink-400 drop-shadow-sm z-10"></div>
+            <!-- การ์ดด้านใน -->
+            <div class="absolute w-[90%] h-[80%] bg-white rounded shadow-inner flex items-center justify-center text-rose-500 font-bold text-xl">
+                Open Q ❤️
+            </div>
+        </div>
+
+        <button onclick="openEnvelope()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 z-20">
+            Open Q 💌
+        </button>
+    </div>
+
+    <!-- ==========================================
+         หน้า 3: ท้องฟ้ากลางคืน ของขวัญ และแมวถือดอกไม้
+         ========================================== -->
+    <div id="step3" class="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-indigo-900 via-slate-900 to-black flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-1000 z-10 overflow-hidden">
+        
+        <!-- พื้นที่แสดง Emoji ลอยขึ้นมา -->
+        <div id="floating-area" class="absolute inset-0 w-full h-full pointer-events-none"></div>
+        
+        <div class="z-10 flex flex-col items-center text-center px-4">
+            <!-- ข้อความอวยพร -->
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 drop-shadow-[0_2px_2px_rgba(255,255,255,0.3)] mb-4 animate-bounce">
+                Happy Birthday! 🎉
+            </h1>
+            <p class="text-pink-200 text-lg md:text-xl mb-8 font-medium tracking-wide">
+                เจอแต่เรื่องดีๆ ใช้ชีวิตมีความสุขเเบบชินจังนะ 💌✨
+            </p>
+            
+            <!-- ไฟล์วิดีโอน้องแมวถือดอกไม้ -->
+            <video src="q.mp4" autoplay loop muted playsinline class="w-72 h-auto rounded-2xl shadow-[0_0_20px_rgba(255,105,180,0.5)] border-4 border-pink-200/30"></video>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         JavaScript จัดการสเต็ปต่างๆ
+         ========================================== -->
+    <script>
+        // ฟังก์ชันใหม่: เมื่อแตะหน้าปก ให้เล่นเพลงและโชว์หน้าแมวถือเค้ก
+        function startExperience() {
+            let music = document.getElementById('bg-music');
+            music.volume = 0.5; // ปรับเสียง 50%
+            music.play(); // เพลงเล่นทันทีที่แตะหน้าจอ
+            
+            // ซ่อนหน้าปก
+            document.getElementById('step0').classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function showStep2() {
+            // ซ่อนหน้า 1 แมวถือเค้ก
+            document.getElementById('step1').classList.add('opacity-0', 'pointer-events-none');
+            // โชว์หน้า 2 ซองจดหมาย
+            document.getElementById('step2').classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function openEnvelope() {
+            // สั่งเล่นแอนิเมชันเปิดฝาซอง
+            document.getElementById('flap').classList.add('open-flap');
+            
+            // รอ 1 วินาที แล้วค่อยสลับไปหน้า 3
+            setTimeout(() => {
+                document.getElementById('step2').classList.add('opacity-0', 'pointer-events-none');
+                document.getElementById('step3').classList.remove('opacity-0', 'pointer-events-none');
+                
+                // เริ่มสร้างของลอยๆ ตัว Q
+                createFloatingObjects();
+            }, 1000);
+        }
+
+        function createFloatingObjects() {
+            const area = document.getElementById('floating-area');
+            const emojis = ['Q', '💖', '🎁', '✨', '🎂', '🎉', '🌟', 'Q'];
+            
+            setInterval(() => {
+                const el = document.createElement('div');
+                el.classList.add('floating', 'text-2xl', 'md:text-4xl');
+                el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.animationDuration = (Math.random() * 3 + 4) + 's'; 
+                
+                area.appendChild(el);
+                
+                setTimeout(() => {
+                    el.remove();
+                }, 7000);
+            }, 400);
+        }
+    </script>
+</body>
+</html>
